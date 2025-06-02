@@ -16,48 +16,54 @@ public class BaseTrackState implements TrackState
 {
     public static final int PARAMETERS_SIZE  = 5; // Number of LCIO track parameters.
     public static final int REF_POINT_SIZE   = 3; // Size of reference point (x, y, z).
-    public static final int MOMENTUM_SIZE    = 3; // Size of momentum array (px, py, pz).
     public static final int COV_MATRIX_SIZE = 15; // Size of covariance matrix array.
+    public static final int MOMENTUM_SIZE   = 3; // Size of momentum (x, y, z).
+
+    private double _def=-666; //use crazy default value
     
-    // Initialization here is wasteful, but it protects against users leaving these null.
     private double[] _parameters = new double[PARAMETERS_SIZE];     // Parameters array.
     private double[] _referencePoint = new double[REF_POINT_SIZE];  // Reference point.
     private double[] _covMatrix = new double[COV_MATRIX_SIZE];      // Covariance matrix.
-    //TODO what is momentum doing here?
-    private double[] momentum; 
-
+    private double[] _momentum= new double[MOMENTUM_SIZE];    //momentum array
+   
+    // local bfield
+    private double _blocal=_def;  //initialize with something crazy 
     // Location encoding.
-    private int _location = TrackState.AtIP; // default location
+    private int _location = TrackState.AtPerigee; // default location
        
     public BaseTrackState()
     {}
     
     public BaseTrackState(int location)
     {_location = location; }
+
     
-    //fully qualified constructor
-    public BaseTrackState(double[] trackParameters, double[] covarianceMatrix, double[] position, int location)
+    //fully qualified constructor but with no bfield (so no momentum)
+    public BaseTrackState(double[] trackParameters, double[] position, double[] covarianceMatrix, int location)
     {
         _location = location;
         System.arraycopy(trackParameters, 0, _parameters, 0, PARAMETERS_SIZE);
         System.arraycopy(covarianceMatrix, 0, _covMatrix, 0, COV_MATRIX_SIZE);
-        System.arraycopy(position,0, _referencePoint, 0, REF_POINT_SIZE);
+        System.arraycopy(position,0, _referencePoint, 0, REF_POINT_SIZE);	
     }
     
     // Ctor with parameters and B-field.  
     // The reference point, covariance matrix, and location can be set later.
     public BaseTrackState(double[] parameters, double bfield)
     {
+	setBLocal(bfield);
         setParameters(parameters, bfield);
     }
     
     // Fully qualified constructor.
     public BaseTrackState(double[] parameters, double[] referencePoint, double[] covMatrix, int location, double bfield)
     {
+	setBLocal(bfield); 
         setParameters(parameters, bfield);
         setReferencePoint(referencePoint);
         setCovMatrix(covMatrix);
         setLocation(location);
+	
     }
      
     public int getLocation()
@@ -99,6 +105,10 @@ public class BaseTrackState implements TrackState
     {
         return _parameters[BaseTrack.TANLAMBDA];
     }
+    public double getBLocal()
+    {
+        return _blocal;
+    }
     
     public void setD0(double d0)
     {
@@ -132,6 +142,12 @@ public class BaseTrackState implements TrackState
         this._location = location;
     }
 
+    public void setBLocal(double d)
+    { 
+        _blocal = d;
+    }
+    
+
     // FIXME Should be array copy?
     public void setReferencePoint(double[] referencePoint)
     {
@@ -149,7 +165,11 @@ public class BaseTrackState implements TrackState
     // If setParameters or a qualified constructor was not called, this could be null.
     public double[] getMomentum()
     {
-        return momentum;
+	//make sure this has been computed
+	if(_momentum[0]== 0 )//it hasn't been computed
+	    if(_blocal!=_def)
+		computeMomentum();	       	    
+        return _momentum;
     }
     
     // Get a track parameter by ordinal.
@@ -174,8 +194,9 @@ public class BaseTrackState implements TrackState
      */
     public void setParameters(double[] p, double bfield)
     {
+	_blocal=bfield;
         copyParameters(p, _parameters);
-        computeMomentum(bfield);
+        computeMomentum();
     }
     
     static final void copyParameters(double[] p1, double[] p2)
@@ -187,37 +208,25 @@ public class BaseTrackState implements TrackState
         System.arraycopy(p1, 0, p2, 0, PARAMETERS_SIZE);
     }
     
-    /**
-     * Compute the momentum of this TrackState, setting the internal array containing (px,py,pz),
-     * and return the result.
-     * @param bz The B-field in Z.
-     * @return The computed momentum.
-     */
-    public double[] computeMomentum(double bz)
-    {
-        momentum = computeMomentum(this, bz);
-        return momentum;
-    }
-    
-    /**
-     * Compute the momentum of a TrackState, given a Bz field component.
-     * @param ts The TrackState.
-     * @param Bz The magnetic field component Bz.
-     * @return The momentum computed from the TrackState's parameters.
-     */
-    public static final double[] computeMomentum(TrackState ts, double magneticField)
-    {
-        double omega = ts.getOmega();
+   
+    public void computeMomentum(){
+	double omega = this.getOmega();
         if(abs(omega) < 0.0000001) omega = 0.0000001;
-        double Pt = abs((1./omega) * magneticField * Constants.fieldConversion);  
+        double Pt = abs((1./omega) * _blocal * Constants.fieldConversion);  
         double[] momentum = new double[3];
-        momentum[0] = Pt * Math.cos(ts.getPhi());
-        momentum[1] = Pt * Math.sin(ts.getPhi());
-        momentum[2] = Pt * ts.getTanLambda();
-        return momentum;
+        momentum[0] = Pt * Math.cos(this.getPhi());
+        momentum[1] = Pt * Math.sin(this.getPhi());
+        momentum[2] = Pt * this.getTanLambda();
+	setMomentum(momentum);
     }
     
-    /**
+    public void setMomentum(double[] mom){
+	this._momentum[0]=mom[0];
+	this._momentum[1]=mom[1];
+	this._momentum[2]=mom[2];
+    }
+
+     /**
      * Convert object to a String.
      */
     public String toString()
@@ -230,6 +239,7 @@ public class BaseTrackState implements TrackState
         buff.append("tanLambda = " + getTanLambda() + "\n");
         buff.append("omega = " + getOmega() + "\n");
         buff.append("referencePoint = " + _referencePoint[0] + " " + _referencePoint[1] + " " + _referencePoint[2] + "\n");
+	buff.append("bField at ref = "+_blocal+"\n");
         buff.append("covarianceMatrix = ");
         for (int i=0; i<_covMatrix.length; i++) 
         {
@@ -239,7 +249,7 @@ public class BaseTrackState implements TrackState
         buff.append("momentum = ");
         for (int i=0; i<this.MOMENTUM_SIZE; i++)
         {
-            buff.append(momentum[i] + " ");
+            buff.append(_momentum[i] + " ");
         }
         buff.append("\n");
         return buff.toString();

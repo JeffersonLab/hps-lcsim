@@ -6,16 +6,21 @@ package org.lcsim.event;
  * @author gaede, engels
  * @author Jeremy McCormick
  * @version $Id: TrackState.java,v 1.2 2012/06/18 23:02:14 jeremy Exp $
+ * 
+ * @author mgraham
+ * changes to lcsim-hps fork:  added AtTarget and AtPerigee, reordered
  */
 public interface TrackState 
 {
     // TrackState location codes.
     public final static int AtOther = 0;  // Any location other than the ones defined below. 
-    public final static int AtIP = 1;
-    public final static int AtFirstHit = 2;
-    public final static int AtLastHit = 3;
-    public final static int AtCalorimeter = 4;
-    public final static int AtVertex = 5;
+    public final static int AtPerigee = 1;  //track state at perigee, which is what the track finder returns
+    public final static int AtIP = 2;  // this is at the target
+    public final static int AtTarget = 2;  // this is at the target
+    public final static int AtFirstHit = 3;
+    public final static int AtLastHit = 4;
+    public final static int AtCalorimeter = 5;
+    public final static int AtVertex = 6;
     public final static int LastLocation = AtVertex;
     
     /** 
@@ -52,6 +57,11 @@ public interface TrackState
      */
     public double getTanLambda();
     
+    /** 
+     * The b-field at the reference point
+     */
+    public double getBLocal();
+
     /**
      * Get the ordered list of 5 LCIO track parameters.
      * @return The track parameters as a double array of size 5.
@@ -74,7 +84,7 @@ public interface TrackState
     public double[] getReferencePoint();
     
     public double[] getMomentum();
-    
+
     /**
      * Get an individual track parameter.
      * They are returned by the following keys: 

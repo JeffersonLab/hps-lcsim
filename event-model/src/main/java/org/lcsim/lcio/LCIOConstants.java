@@ -7,8 +7,13 @@ package org.lcsim.lcio;
 public interface LCIOConstants
 {
    // major and minor version numbers
-   int MAJORVERSION = 2;
-   int MINORVERSION = 7;
+   int MAJORVERSION = 3;
+   int MINORVERSION = 0;
+
+    // Pre-TrackState change (pre-May 2025) version
+   int PRE2025MAJORVER = 2;
+   int PRE2025MINORVER = 7;
+
     
    // bits in flag words
    // SimCalorimeterHit (CH)
