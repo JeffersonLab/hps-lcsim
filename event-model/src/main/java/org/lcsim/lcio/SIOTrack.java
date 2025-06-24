@@ -4,6 +4,8 @@ import hep.io.sio.SIOInputStream;
 import hep.io.sio.SIOOutputStream;
 import hep.io.sio.SIORef;
 
+import static java.lang.Math.signum;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -30,7 +32,7 @@ class SIOTrack extends BaseTrack
     SIOTrack(SIOInputStream in, int flag, int version, double bField) throws IOException
     {
         _type = in.readInt();
-
+	
         // read TrackStates
         int nTrackStates = 1; // set to 1 per default for backwards compatibility
 
@@ -51,12 +53,12 @@ class SIOTrack extends BaseTrack
 
             ts.setD0(in.readFloat());
             ts.setPhi(in.readFloat());
-            ts.setOmega(in.readFloat());
+            ts.setOmega(in.readFloat());	   
             ts.setZ0(in.readFloat());
             ts.setTanLambda(in.readFloat());
-            
+	    if (version>=3000) ts.setBLocal(in.readFloat());
             // Compute the momentum while we have access to the B-field.
-            ts.computeMomentum(bField);
+            ts.computeMomentum();
             
             double[] covMatrix = new double[15]; // FIXME hardcoded 15
             for (int j = 0; j<covMatrix.length; j++)
@@ -75,7 +77,10 @@ class SIOTrack extends BaseTrack
         _dEdx = in.readFloat();
         _dEdxErr = in.readFloat();
         _innermostHitRadius = in.readFloat();
-        
+	//fill the charge here
+	if(getTrackStates().size()>0)
+	    _charge = (int) signum(getTrackStates().get(0).getOmega());
+	
         int nHitNumbers = in.readInt();
         _subdetId = new int[nHitNumbers];
         for (int i = 0; i<nHitNumbers; i++)
@@ -107,8 +112,10 @@ class SIOTrack extends BaseTrack
 
     static void write(Track track, SIOOutputStream out, int flag) throws IOException
     {
-        out.writeInt(track.getType());
-
+	
+	int writeVersion=LCIOConstants.MAJORVERSION*1000+ LCIOConstants.MINORVERSION; 
+	out.writeInt(track.getType());
+	
         // write out TrackStates
         List<TrackState> trackstates = track.getTrackStates();
         out.writeInt(trackstates.size());
@@ -124,7 +131,8 @@ class SIOTrack extends BaseTrack
             out.writeFloat((float)trackstate.getOmega());
             out.writeFloat((float)trackstate.getZ0());
             out.writeFloat((float)trackstate.getTanLambda());
-            double[] covMatrix = trackstate.getCovMatrix();
+            if (writeVersion>=3000)out.writeFloat((float)trackstate.getBLocal());
+            double[] covMatrix = trackstate.getCovMatrix();	    
             for (int i = 0; i<covMatrix.length; i++)
                 out.writeFloat((float)covMatrix[i]);
             double[] referencePoint = trackstate.getReferencePoint();
