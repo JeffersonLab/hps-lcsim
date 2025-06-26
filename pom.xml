@@ -19,9 +19,9 @@
   </properties>
    
   <scm>
-    <connection>scm:git:ssh://git@github.com/slaclab/lcsim.git</connection>
-    <developerConnection>scm:git:ssh://git@github.com/slaclab/lcsim.git</developerConnection>
-    <url>https://github.com/slaclab/lcsim.git</url>
+    <connection>scm:git:ssh://git@github.com/jeffersonlab/hps-lcsim.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/jeffersonlab/hps-lcsim.git</developerConnection>
+    <url>https://github.com/jeffersonlab/hps-lcsim.git</url>
     <tag>HEAD</tag>
   </scm>
   
