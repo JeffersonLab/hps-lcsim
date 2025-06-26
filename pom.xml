@@ -59,6 +59,12 @@
   
   <distributionManagement>
     <repository>
+      <id>github</id>
+      <name>GitHub JeffersonLab Apache Maven Packages</name>
+      <url>https://maven.pkg.github.com/jeffersonlab/hps-lcsim</url>
+    </repository>
+<!--
+    <repository>
       <id>lcsim-repo-releases</id>
       <name>LCSIM Releases maven repository</name>
       <url>https://srs.slac.stanford.edu/nexus/content/repositories/lcsim-maven2-releases/</url>
@@ -72,6 +78,7 @@
       <id>lcsim-site</id>
       <url>dav:https://srs.slac.stanford.edu/nexus/content/sites/lcsim-site/lcsim/</url>
     </site>
+-->
   </distributionManagement>
 
   <dependencyManagement>
