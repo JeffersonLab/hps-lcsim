@@ -410,7 +410,7 @@ class HtmlConverter
                 header.getURL().equals( "NONE" ) ? "NONE" : new Link( header.getURL() ) );
         addLabeledRow( tbl,
                 "Zip File",
-                new Link( "http://www.lcsim.org/detectors/" + detector.getName() + ".zip" ) );
+                new Link( "http://endeavour.unh.edu/HPS/detectors/" + detector.getName() + ".zip" ) );
     }
 
     private static void subdetector( Element parent, Subdetector subdet )

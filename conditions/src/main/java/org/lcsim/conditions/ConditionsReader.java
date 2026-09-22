@@ -190,7 +190,7 @@ public abstract class ConditionsReader {
 
                 // Finally, try to pull the detector conditions from the lcsim.org website.
                 try {
-                    URL url = new URL("http://www.lcsim.org/detectors/" + name + ".zip"); // FIXME: Hard-coded URL.
+                    URL url = new URL("http://endeavour.unh.edu/HPS/detectors/" + name + ".zip"); // FIXME: Hard-coded URL.
                     File file = downloadDetectorDescription(url);
                     return new ZipConditionsReader(file);
                 } catch (FileNotFoundException x) {
