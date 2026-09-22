@@ -83,7 +83,7 @@ public abstract class ConditionsReader {
                 cache = new FileCache(new File(home, "cache"));
             }
             // FIXME: Not even sure this taglist should be supported at all any longer.
-            File file = cache.getCachedFile(new URL("http://www.lcsim.org/detectors/taglist.txt"));
+            File file = cache.getCachedFile(new URL("https://endeavour.unh.edu/HPS/detectors/taglist.txt"));
             if (file != null) {
                 BufferedReader reader = new BufferedReader(new FileReader(file));
                 for (;;) {
